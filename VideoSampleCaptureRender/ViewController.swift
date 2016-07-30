@@ -10,11 +10,14 @@ import UIKit
 
 import TwilioConversationsClient
 import TwilioCommon.TwilioAccessManager
+import SwiftyJSON
+
+let JID = "PN43bf6a7cd78d4af7d6ac05284dd06216"
 
 class ViewController: UIViewController, UITextFieldDelegate {
     
     // Twilio Access Token - Generate a demo Access Token at https://www.twilio.com/user/account/video/dev-tools/testing-tools
-    let twilioAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzE5ODhkZmE3NDFkNGVmZTNjZDE3MDFlNThlOWE3Yzk0LTE0Njk3Mjc2MzkiLCJpc3MiOiJTSzE5ODhkZmE3NDFkNGVmZTNjZDE3MDFlNThlOWE3Yzk0Iiwic3ViIjoiQUM5OWNlMzg2MjUzNWI2NWNkNWRmOTU3ZTQxZGI4NGJkMyIsImV4cCI6MTQ2OTczMTIzOSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiUE40M2JmNmE3Y2Q3OGQ0YWY3ZDZhYzA1Mjg0ZGQwNjIxNiIsInJ0YyI6eyJjb25maWd1cmF0aW9uX3Byb2ZpbGVfc2lkIjoiVlM2MzExNzVkMmIzNGUxMDMwYWUzNThkOTU1ZDdhNTk0ZSJ9fX0.r2n-6bsYap4rAMuDAQXwRd1pHWknN8DXoDvR-DXeBms"
+    var twilioAccessToken = ""
     
     // Storyboard's outlets
     @IBOutlet weak var spinner: UIActivityIndicatorView!
@@ -27,12 +30,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var cancelLabel: UILabel!
     @IBOutlet weak var receivingImage: UIImageView!
+    @IBOutlet weak var nameReceivingLabel: UILabel!
     
     //Receiving a call
     @IBOutlet weak var receivingView: UIView!
     @IBOutlet weak var rejectButton: UIButton!
     @IBOutlet weak var acceptButton: UIButton!
     @IBOutlet weak var callingImage: UIImageView!
+    
+    @IBOutlet weak var nameCallingLabel: UILabel!
+    @IBOutlet weak var turnCameraButton: UIButton!
+    var front = true
+    
+    @IBOutlet weak var muteButton: UIButton!
     
     // Key Twilio ConversationsClient SDK objects
     var client: TwilioConversationsClient?
@@ -90,19 +100,26 @@ class ViewController: UIViewController, UITextFieldDelegate {
             spinner.stopAnimating()
             self.disconnectButton.hidden = true
             self.inviteeTextField.hidden = false
+            self.turnCameraButton.hidden = false
+            self.muteButton.hidden = true
             self.localVideoContainer?.hidden = false
             self.statusMessage.hidden = true
             print("Listening")
         case .Connecting:
             //self.spinner.startAnimating()
             self.inviteeTextField.hidden = true
+            self.turnCameraButton.hidden = true
+            self.muteButton.hidden = true
             self.localVideoContainer?.hidden = false
             print("Connecting")
         case .Connected:
             //self.spinner.stopAnimating()
             self.inviteeTextField.hidden = true
+            //self.turnCameraButton.hidden = false
+            //self.muteButton.hidden = false
+            self.resetTimer()
             self.view.endEditing(true)
-            self.disconnectButton.hidden = false
+            //self.disconnectButton.hidden = false
             self.localVideoContainer?.hidden = false
             print("Connected")
         }
@@ -122,14 +139,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         //Setup and hide receiving call view
         self.receivingView.hidden = true
-        self.acceptButton.layer.cornerRadius = 40
-        self.rejectButton.layer.cornerRadius = 40
+        self.acceptButton.layer.cornerRadius = 35
+        self.rejectButton.layer.cornerRadius = 35
         self.receivingImage.layer.cornerRadius = self.receivingImage.frame.height/2
         self.receivingImage.contentMode = UIViewContentMode.ScaleAspectFit
         
         //Setup and hide calling view
         self.callingView.hidden = true
-        self.cancelButton.layer.cornerRadius = 40
+        self.cancelButton.layer.cornerRadius = 35
         self.callingImage.layer.cornerRadius = self.callingImage.frame.height/2
         self.callingImage.contentMode = UIViewContentMode.ScaleAspectFit
         
@@ -151,6 +168,20 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.view.bringSubviewToFront(self.inviteeTextField)
         self.inviteeTextField.delegate = self
         
+        //setup turning camera
+        self.turnCameraButton.layer.cornerRadius = 35
+        self.view.bringSubviewToFront(self.turnCameraButton)
+        self.turnCameraButton.layer.borderWidth = 3
+        self.turnCameraButton.layer.borderColor = UIColor.whiteColor().CGColor
+        self.turnCameraButton.hidden = true
+        
+        //setup muting
+        self.muteButton.layer.cornerRadius = 35
+        self.view.bringSubviewToFront(self.muteButton)
+        self.muteButton.layer.borderWidth = 3
+        self.muteButton.layer.borderColor = UIColor.whiteColor().CGColor
+        self.muteButton.hidden = true
+        
         // Spinner - shown when attempting to listen for Invites and when sending an Invite
         self.view.addSubview(spinner)
         spinner.startAnimating()
@@ -162,14 +193,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Disconnect button
         self.view.bringSubviewToFront(self.disconnectButton)
         self.disconnectButton.hidden = true
-        self.disconnectButton.layer.cornerRadius = 40
-        
-        // Setup the local media
-        self.setupLocalMedia()
-        
-        // Start listening for Invites
+        self.disconnectButton.layer.cornerRadius = 35
+
         TwilioConversationsClient.setLogLevel(.Warning)
         self.listenForInvites()
+        self.setupLocalMedia()
+        
+        timer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: #selector(ViewController.idleTimeExceeded), userInfo: nil, repeats: false)
     }
     
     override func viewWillLayoutSubviews() {
@@ -223,23 +253,41 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if conversation != nil {
             let location = self.localVideoContainer?.center
+            if location!.x > self.view.frame.width/2 {
+                if location!.y > self.view.frame.height/2 {
+                    self.currentCorner = .BottomRight
+                } else {
+                    self.currentCorner = .TopRight
+                }
+            } else {
+                if location!.y > self.view.frame.height/2 {
+                    self.currentCorner = .BottomLeft
+                } else {
+                    self.currentCorner = .TopLeft
+                }
+            }
+            self.resetTimer()
             UIView.animateWithDuration(0.3, animations: {
                 // CONSIDER ADDING ANIMATION HERE?
                 if location!.x > self.view.frame.width/2 {
                     if location!.y > self.view.frame.height/2 {
-                        self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
-                        self.currentCorner = .BottomRight
+                        if self.buttonsShowed {
+                            self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10 - 100)
+                        } else {
+                            self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        }
                     } else {
                         self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.localVideoContainer!.frame.height/2 + 10)
-                        self.currentCorner = .TopRight
                     }
                 } else {
                     if location!.y > self.view.frame.height/2 {
-                        self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
-                        self.currentCorner = .BottomLeft
+                        if self.buttonsShowed {
+                            self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10 - 100)
+                        } else {
+                            self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        }
                     } else {
                         self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.localVideoContainer!.frame.height/2 + 10)
-                        self.currentCorner = .TopLeft
                     }
                 }
             })
@@ -249,23 +297,101 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
         if conversation != nil {
             let location = self.localVideoContainer?.center
+            if location!.x > self.view.frame.width/2 {
+                if location!.y > self.view.frame.height/2 {
+                    self.currentCorner = .BottomRight
+                } else {
+                    self.currentCorner = .TopRight
+                }
+            } else {
+                if location!.y > self.view.frame.height/2 {
+                    self.currentCorner = .BottomLeft
+                } else {
+                    self.currentCorner = .TopLeft
+                }
+            }
+            self.resetTimer()
             UIView.animateWithDuration(0.3, animations: {
                 // CONSIDER ADDING ANIMATION HERE?
                 if location!.x > self.view.frame.width/2 {
                     if location!.y > self.view.frame.height/2 {
-                        self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        if self.buttonsShowed {
+                            self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10 - 100)
+                        } else {
+                            self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        }
                     } else {
                         self.localVideoContainer!.center = CGPointMake(self.view.frame.width - self.localVideoContainer!.frame.width/2 - 10, self.localVideoContainer!.frame.height/2 + 10)
                     }
                 } else {
                     if location!.y > self.view.frame.height/2 {
-                        self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        if self.buttonsShowed {
+                            self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10 - 100)
+                        } else {
+                            self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+                        }
                     } else {
                         self.localVideoContainer!.center = CGPointMake(self.localVideoContainer!.frame.width/2 + 10, self.localVideoContainer!.frame.height/2 + 10)
                     }
                 }
             })
         }
+    }
+    
+    var buttonsShowed = true
+    var timer : NSTimer?
+    
+    //idle checking
+    func resetTimer() {
+        print("reset timer")
+        print(self.buttonsShowed)
+        if let mytimer = timer {
+            mytimer.invalidate()
+            self.timer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: #selector(ViewController.idleTimeExceeded), userInfo: nil, repeats: false)
+        }
+        if !self.buttonsShowed {
+            self.buttonsShowed = true
+            self.turnCameraButton.hidden = false
+            self.muteButton.hidden = false
+            self.disconnectButton.hidden = false
+            UIView.animateWithDuration(0.3, animations: {
+                //if !self.buttonsShowed {
+                    self.turnCameraButton.center = CGPoint(x: self.turnCameraButton.center.x, y: self.view.frame.height - self.turnCameraButton.frame.height/2 - 30)
+                    self.muteButton.center = CGPoint(x: self.muteButton.center.x, y: self.view.frame.height - self.muteButton.frame.height/2 - 30)
+                    self.disconnectButton.center = CGPoint(x: self.disconnectButton.center.x, y: self.view.frame.height - self.disconnectButton.frame.height/2 - 30)
+                    if self.currentCorner == .BottomLeft || self.currentCorner == .BottomRight {
+                        self.localVideoContainer!.center = CGPoint(x: self.localVideoContainer!.center.x, y: self.view.frame.height - self.localVideoContainer!.frame.height/2 - 110)
+                    }
+                //}
+            }) { (success) in
+                //self.buttonsShowed = true
+            }
+        }
+    }
+    
+    
+    
+    func idleTimeExceeded() {
+        print("idle exceeded")
+        if self.conversation == nil {
+            return
+        }
+        UIView.animateWithDuration(0.3, animations: {
+            //if self.buttonsShowed {
+            self.turnCameraButton.center = CGPoint(x: self.turnCameraButton.center.x, y: self.view.frame.height - self.turnCameraButton.frame.height/2 + 70)
+            self.muteButton.center = CGPoint(x: self.muteButton.center.x, y: self.view.frame.height - self.muteButton.frame.height/2 + 70)
+            self.disconnectButton.center = CGPoint(x: self.disconnectButton.center.x, y: self.view.frame.height - self.disconnectButton.frame.height/2 + 70)
+            if self.currentCorner == .BottomLeft || self.currentCorner == .BottomRight {
+                self.localVideoContainer!.center = CGPoint(x: self.localVideoContainer!.center.x, y: self.view.frame.height - self.localVideoContainer!.frame.height/2 - 10)
+            }
+            //}
+            }) { (success) in
+                //self.buttonsShowed = false
+                self.turnCameraButton.hidden = true
+                self.muteButton.hidden = true
+                self.disconnectButton.hidden = true
+        }
+        self.buttonsShowed = false
     }
     
     // Disconnect button
@@ -276,6 +402,22 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    var muted = false
+    
+    @IBAction func muteClicked(sender: AnyObject) {
+        self.muted = !self.muted
+        setMuteImage()
+        self.localMedia!.microphoneMuted = self.muted
+    }
+    
+    func setMuteImage() {
+        if self.muted {
+            self.muteButton.setImage(UIImage(named: "microphoneMutedIcon"), forState: UIControlState.Normal)
+        } else {
+            self.muteButton.setImage(UIImage(named: "microphoneIcon"), forState: UIControlState.Normal)
+        }
+    }
+    
     func layoutLocalVideoContainer() {
         var rect:CGRect! = CGRectZero
         
@@ -283,11 +425,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
         if clientStatus == .Connected {
             rect!.size = UIDeviceOrientationIsLandscape(UIDevice.currentDevice().orientation) ? CGSizeMake(160, 90) : CGSizeMake(90, 160)
             if self.currentCorner == .BottomRight {
-                rect!.origin = CGPointMake(self.view.frame.width - rect!.width - 10, self.view.frame.height - rect!.height - 10)
+                if buttonsShowed {
+                    rect!.origin = CGPointMake(self.view.frame.width - rect!.width - 10, self.view.frame.height - rect!.height - 10 - 100)
+                } else {
+                    rect!.origin = CGPointMake(self.view.frame.width - rect!.width - 10, self.view.frame.height - rect!.height - 10)
+                }
             } else if self.currentCorner == .TopRight {
                 rect!.origin = CGPointMake(self.view.frame.width - rect!.width - 10, 10)
             } else if self.currentCorner == .BottomLeft {
-                rect!.origin = CGPointMake(10, self.view.frame.height - rect!.height - 10)
+                if buttonsShowed {
+                    rect!.origin = CGPointMake(10, self.view.frame.height - rect!.height - 10 - 100)
+                } else {
+                    rect!.origin = CGPointMake(10, self.view.frame.height - rect!.height - 10)
+                }
             } else {
                 rect!.origin = CGPointMake(10, 10)
             }
@@ -324,9 +474,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     func listenForInvites() {
         assert(self.twilioAccessToken != "TWILIO_ACCESS_TOKEN", "Set the value of the placeholder property 'twilioAccessToken' to a valid Twilio Access Token.")
-        let accessManager = TwilioAccessManager(token: self.twilioAccessToken, delegate:nil);
+        print("access manager")
+        let accessManager = TwilioAccessManager(token: self.twilioAccessToken, delegate:nil)
         print(accessManager.identity())
-        
+        print("client")
         self.client = TwilioConversationsClient(accessManager: accessManager!, delegate: self);
         self.client!.listen()
     }
@@ -340,11 +491,28 @@ class ViewController: UIViewController, UITextFieldDelegate {
             setupLocalPreview()
         }
     }
+    @IBAction func turnCamera(sender: AnyObject) {
+        self.front = !self.front
+        //createCapturer()
+        self.camera!.flipCamera()
+        
+        
+    }
+    
+    var lastVideoTrack : TWCLocalVideoTrack?
     
     func createCapturer() {
-        self.camera = TWCCameraCapturer(delegate: self, source: .FrontCamera)
+        if front {
+            self.camera = TWCCameraCapturer(delegate: self, source: .FrontCamera)
+        } else {
+            self.camera = TWCCameraCapturer(delegate: self, source: .BackCamera)
+        }
         let videoCaptureConstraints = self.videoCaptureConstraints()
         let videoTrack = TWCLocalVideoTrack(capturer: self.camera!, constraints: videoCaptureConstraints)
+        if let lastTrack = self.lastVideoTrack {
+            self.localMedia!.removeTrack(lastTrack)
+        }
+        self.lastVideoTrack = videoTrack
         if self.localMedia!.addTrack(videoTrack) == false {
             print("Error: Failed to create a video track using the local camera.")
         }
@@ -406,6 +574,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     func inviteParticipant(inviteeIdentity: String) {
         if inviteeIdentity.isEmpty == false {
+            self.nameCallingLabel.text = inviteeIdentity
             self.outgoingInvite =
                 self.client?.inviteToConversation(inviteeIdentity, localMedia:self.localMedia!) { conversation, err in
                     self.outgoingInviteCompletionHandler(conversation, err: err)
@@ -419,22 +588,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
         print("inviteParticipant")
     }
     
-    func cancelCall() {
-        /*
-        let url = NSURL(string: "https://AC99ce3862535b65cd5df957e41db84bd3:9fe0b905b7275eabdcb209b0542aa212@api.twilio.com/2010-04-01/Accounts/AC99ce3862535b65cd5df957e41db84bd3/Calls/")
-        let urlrequest = NSMutableURLRequest(URL: url!)
-        urlrequest.HTTPMethod = "POST"
-        */
-        self.outgoingInvite?.cancel()
-        
-        //THIS IS AWFUL I HATE THIS
-    }
-    
     @IBAction func cancelClicked(sender: AnyObject) {
-        self.cancelCall()
+        self.outgoingInvite?.cancel()
         self.callingView.hidden = true
     }
-    
     
     func outgoingInviteCompletionHandler(conversation: TWCConversation?, err: NSError?) {
         if err == nil {
@@ -451,6 +608,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 self.callingView.hidden = true
                 self.cancelLabel.hidden = false
                 self.disconnectButton.hidden = false
+                self.muteButton.hidden = false
+                self.turnCameraButton.hidden = false
                 let currentCenter = self.cancelButton.center
                 self.cancelButton.center = CGPoint(x: currentCenter.x, y: currentCenter.y-20)
             }
@@ -521,8 +680,11 @@ extension ViewController: TwilioConversationsClientDelegate {
         didReceiveInvite invite: TWCIncomingInvite) {
         //TUTAJ EKRAN GDZIE BĘDZIE ŻE DZWONI
         print(invite.from)
+        self.nameReceivingLabel.text = invite.from
         self.receivingView.hidden = false
         self.inviteeTextField.hidden = true
+        self.muteButton.hidden = true
+        self.turnCameraButton.hidden = true
         self.view.bringSubviewToFront(self.receivingView)
         self.lastInvite = invite
             /*
@@ -555,6 +717,8 @@ extension ViewController: TwilioConversationsClientDelegate {
         self.lastInvite?.reject()
         self.receivingView.hidden = true
         self.inviteeTextField.hidden = false
+        self.turnCameraButton.hidden = false
+        self.muteButton.hidden = true
     }
     
     @IBAction func acceptClicked(sender: AnyObject) {
@@ -572,12 +736,34 @@ extension ViewController: TwilioConversationsClientDelegate {
             }
         })
         self.receivingView.hidden = true
+        //self.buttonsShowed = true
+        self.turnCameraButton.center = CGPoint(x: self.turnCameraButton.center.x, y: self.view.frame.height - self.turnCameraButton.frame.height/2 + 70)
+        self.muteButton.center = CGPoint(x: self.muteButton.center.x, y: self.view.frame.height - self.muteButton.frame.height/2 + 70)
+        self.disconnectButton.center = CGPoint(x: self.disconnectButton.center.x, y: self.view.frame.height - self.disconnectButton.frame.height/2 + 70)
+        self.buttonsShowed = false
+        /*UIView.animateWithDuration(0.3, animations: {
+            //if !self.buttonsShowed {
+            self.turnCameraButton.center = CGPoint(x: self.turnCameraButton.center.x, y: self.view.frame.height - self.turnCameraButton.frame.height/2 - 30)
+            self.muteButton.center = CGPoint(x: self.muteButton.center.x, y: self.view.frame.height - self.muteButton.frame.height/2 - 30)
+            self.disconnectButton.center = CGPoint(x: self.disconnectButton.center.x, y: self.view.frame.height - self.disconnectButton.frame.height/2 - 30)
+            //}
+        }) { (success) in
+            //self.buttonsShowed = true
+        }*/
     }
     
     func conversationsClient(conversationsClient: TwilioConversationsClient, inviteDidCancel invite: TWCIncomingInvite) {
         self.receivingView.hidden = true
         self.inviteeTextField.hidden = false
+        self.turnCameraButton.hidden = false
+        self.muteButton.hidden = true
         self.view.bringSubviewToFront(self.inviteeTextField)
+        self.view.bringSubviewToFront(self.muteButton)
+        self.view.bringSubviewToFront(self.turnCameraButton)
+    }
+    
+    func conversationEnded(conversation: TWCConversation, error: NSError) {
+        //do some stuff
     }
 }
 
@@ -593,6 +779,13 @@ extension ViewController: TWCConversationDelegate {
         self.resetClientStatus()
         self.receivingView.hidden = true
         self.view.bringSubviewToFront(self.inviteeTextField)
+        self.view.bringSubviewToFront(self.muteButton)
+        self.view.bringSubviewToFront(self.turnCameraButton)
+        
+        let alertController = UIAlertController(title: "Oops!", message: "The call ended!", preferredStyle: .Alert)
+        let OKAction = UIAlertAction(title: "OK", style: .Default) { (action) in  }
+        alertController.addAction(OKAction)
+        self.presentViewController(alertController, animated: true) { }
     }
 }
 

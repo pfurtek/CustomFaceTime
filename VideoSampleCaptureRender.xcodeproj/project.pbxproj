@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0045A86135B118A4EA7D2047 /* libPods-VideoSampleCaptureRender.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB459E52724834F715FEA91E /* libPods-VideoSampleCaptureRender.a */; };
 		30461DA91C98DAB000187C18 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30461DA81C98DAB000187C18 /* AudioToolbox.framework */; };
 		30461DAB1C98DAB700187C18 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30461DAA1C98DAB700187C18 /* VideoToolbox.framework */; };
 		30461DAD1C98DABC00187C18 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30461DAC1C98DABC00187C18 /* CoreTelephony.framework */; };
@@ -22,6 +21,8 @@
 		4BEF624F1C9213D700A674ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BEF624E1C9213D700A674ED /* Assets.xcassets */; };
 		4BEF62521C9213D700A674ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEF62501C9213D700A674ED /* LaunchScreen.storyboard */; };
 		4BEF625D1C922EF600A674ED /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BEF625C1C922EF600A674ED /* AVFoundation.framework */; };
+		983E10B1B97EC8140DFB53C3 /* Pods_VideoSampleCaptureRender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20E375B8D814B4C846CECBC /* Pods_VideoSampleCaptureRender.framework */; };
+		E5F556301D4C0E780006E9F5 /* EntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F5562F1D4C0E780006E9F5 /* EntryViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,7 +44,8 @@
 		4BEF62531C9213D700A674ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = VideoSampleCaptureRender/Info.plist; sourceTree = "<group>"; };
 		4BEF625C1C922EF600A674ED /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		874A343CCCF9A5473DB28385 /* Pods-VideoSampleCaptureRender.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VideoSampleCaptureRender.debug.xcconfig"; path = "Pods/Target Support Files/Pods-VideoSampleCaptureRender/Pods-VideoSampleCaptureRender.debug.xcconfig"; sourceTree = "<group>"; };
-		AB459E52724834F715FEA91E /* libPods-VideoSampleCaptureRender.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VideoSampleCaptureRender.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D20E375B8D814B4C846CECBC /* Pods_VideoSampleCaptureRender.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_VideoSampleCaptureRender.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5F5562F1D4C0E780006E9F5 /* EntryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntryViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +61,7 @@
 				30461DAB1C98DAB700187C18 /* VideoToolbox.framework in Frameworks */,
 				30461DA91C98DAB000187C18 /* AudioToolbox.framework in Frameworks */,
 				4BEF625D1C922EF600A674ED /* AVFoundation.framework in Frameworks */,
-				0045A86135B118A4EA7D2047 /* libPods-VideoSampleCaptureRender.a in Frameworks */,
+				983E10B1B97EC8140DFB53C3 /* Pods_VideoSampleCaptureRender.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +94,7 @@
 				4BEF62471C9213D700A674ED /* AppDelegate.swift */,
 				4BEF62491C9213D700A674ED /* ViewController.swift */,
 				4B2C8E271C97AA0D005C5292 /* Platform.swift */,
+				E5F5562F1D4C0E780006E9F5 /* EntryViewController.swift */,
 			);
 			name = Sources;
 			path = VideoSampleCaptureRender;
@@ -127,7 +130,7 @@
 				30461DAA1C98DAB700187C18 /* VideoToolbox.framework */,
 				30461DA81C98DAB000187C18 /* AudioToolbox.framework */,
 				4BEF625C1C922EF600A674ED /* AVFoundation.framework */,
-				AB459E52724834F715FEA91E /* libPods-VideoSampleCaptureRender.a */,
+				D20E375B8D814B4C846CECBC /* Pods_VideoSampleCaptureRender.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -270,6 +273,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B2C8E281C97AA0D005C5292 /* Platform.swift in Sources */,
+				E5F556301D4C0E780006E9F5 /* EntryViewController.swift in Sources */,
 				4BEF624A1C9213D700A674ED /* ViewController.swift in Sources */,
 				4BEF62481C9213D700A674ED /* AppDelegate.swift in Sources */,
 			);
