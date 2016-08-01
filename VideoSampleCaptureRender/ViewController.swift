@@ -275,7 +275,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 }
             }
             self.resetTimer()
-            UIView.animateWithDuration(0.3, animations: {
+            UIView.animateWithDuration(0.2, animations: {
                 // CONSIDER ADDING ANIMATION HERE?
                 if location!.x > self.view.frame.width/2 {
                     if location!.y > self.view.frame.height/2 {
@@ -319,7 +319,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 }
             }
             self.resetTimer()
-            UIView.animateWithDuration(0.3, animations: {
+            UIView.animateWithDuration(0.2, animations: {
                 // CONSIDER ADDING ANIMATION HERE?
                 if location!.x > self.view.frame.width/2 {
                     if location!.y > self.view.frame.height/2 {
@@ -408,6 +408,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
             conversation?.disconnect()
             self.localVideoContainer!.userInteractionEnabled = false
         }
+        resetTimer()
     }
     
     var muted = false
@@ -416,6 +417,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.muted = !self.muted
         setMuteImage()
         self.localMedia!.microphoneMuted = self.muted
+        resetTimer()
     }
     
     func setMuteImage() {
@@ -503,8 +505,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.front = !self.front
         //createCapturer()
         self.camera!.flipCamera()
-        
-        
+        resetTimer()
     }
     
     var lastVideoTrack : TWCLocalVideoTrack?
