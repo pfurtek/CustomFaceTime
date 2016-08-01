@@ -140,13 +140,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
         //Setup and hide receiving call view
         self.receivingView.hidden = true
         self.acceptButton.layer.cornerRadius = 35
+        self.acceptButton.layer.borderWidth = 3
+        self.acceptButton.layer.borderColor = self.acceptButton.backgroundColor?.CGColor
         self.rejectButton.layer.cornerRadius = 35
+        self.rejectButton.layer.borderWidth = 3
+        self.rejectButton.layer.borderColor = self.rejectButton.backgroundColor?.CGColor
         self.receivingImage.layer.cornerRadius = self.receivingImage.frame.height/2
         self.receivingImage.contentMode = UIViewContentMode.ScaleAspectFit
         
         //Setup and hide calling view
         self.callingView.hidden = true
         self.cancelButton.layer.cornerRadius = 35
+        self.cancelButton.layer.borderWidth = 3
+        self.cancelButton.layer.borderColor = self.cancelButton.backgroundColor?.CGColor
         self.callingImage.layer.cornerRadius = self.callingImage.frame.height/2
         self.callingImage.contentMode = UIViewContentMode.ScaleAspectFit
         
@@ -194,6 +200,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.view.bringSubviewToFront(self.disconnectButton)
         self.disconnectButton.hidden = true
         self.disconnectButton.layer.cornerRadius = 35
+        self.disconnectButton.layer.borderWidth = 3
+        self.disconnectButton.layer.borderColor = self.disconnectButton.backgroundColor?.CGColor
 
         TwilioConversationsClient.setLogLevel(.Warning)
         self.listenForInvites()
@@ -565,10 +573,20 @@ class ViewController: UIViewController, UITextFieldDelegate {
         updateClientStatus(self.client!.listening ? .Listening : .FailedToListen, animated: true)
     }
     
+    var number : String?
+    
     // Respond to "Send" button on keyboard
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         self.view.endEditing(true)
-        inviteParticipant(textField.text!)
+        let login = "\(textField.text!)@talkshop.co"
+        if self.number != login {
+            inviteParticipant(login)
+        } else {
+            let alertController = UIAlertController(title: "Oops!", message: "You can't call yourself!", preferredStyle: .Alert)
+            let OKAction = UIAlertAction(title: "OK", style: .Default) { (action) in  }
+            alertController.addAction(OKAction)
+            self.presentViewController(alertController, animated: true) { }
+        }
         return false
     }
     

@@ -10,7 +10,7 @@ import UIKit
 
 let appDomain = "talkshop.im"
 
-class EntryViewController: UIViewController {
+class EntryViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var numberTextField: UITextField!
     
     var token : String = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzE5ODhkZmE3NDFkNGVmZTNjZDE3MDFlNThlOWE3Yzk0LTE0Njk4MzE2MDMiLCJpc3MiOiJTSzE5ODhkZmE3NDFkNGVmZTNjZDE3MDFlNThlOWE3Yzk0Iiwic3ViIjoiQUM5OWNlMzg2MjUzNWI2NWNkNWRmOTU3ZTQxZGI4NGJkMyIsImV4cCI6MTQ2OTgzNTIwMywiZ3JhbnRzIjp7ImlkZW50aXR5IjoiUE40M2JmNmE3Y2Q3OGQ0YWY3ZDZhYzA1Mjg0ZGQwNjIxNiIsInJ0YyI6eyJjb25maWd1cmF0aW9uX3Byb2ZpbGVfc2lkIjoiVlM2MzExNzVkMmIzNGUxMDMwYWUzNThkOTU1ZDdhNTk0ZSJ9fX0.-2QYVfa4EUmRb-NVnNh66Gd3IZhASha3VGNIr7Rll4U"
@@ -69,8 +69,9 @@ class EntryViewController: UIViewController {
         if let number = numberTextField.text {
             //perform a call to get the token
             if number != "" {
+                self.login = "\(number)@talkshop.co"
                 NSUserDefaults.standardUserDefaults().setObject(number, forKey: "number")
-                retrieveAccessTokenFromServer(number, completion: { (success,error) in
+                retrieveAccessTokenFromServer(login, completion: { (success,error) in
                     dispatch_async(dispatch_get_main_queue(), {
                         if success {
                             self.performSegueWithIdentifier("tokenValid", sender: self)
@@ -83,7 +84,32 @@ class EntryViewController: UIViewController {
         }
     }
     
-
+    var login: String = ""
+    
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        if let number = numberTextField.text {
+            //perform a call to get the token
+            if number != "" {
+                self.login = "\(number)@talkshop.co"
+                NSUserDefaults.standardUserDefaults().setObject(number, forKey: "number")
+                retrieveAccessTokenFromServer(login, completion: { (success,error) in
+                    dispatch_async(dispatch_get_main_queue(), {
+                        if success {
+                            self.performSegueWithIdentifier("tokenValid", sender: self)
+                        } else {
+                            print(error)
+                        }
+                    })
+                })
+            }
+        }
+        return false
+    }
+    
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        self.numberTextField.resignFirstResponder()
+    }
     
     // MARK: - Navigation
 
@@ -94,6 +120,7 @@ class EntryViewController: UIViewController {
         if segue.destinationViewController is ViewController {
             let destination = segue.destinationViewController as! ViewController
             destination.twilioAccessToken = self.token
+            destination.number = self.login
         }
     }
 

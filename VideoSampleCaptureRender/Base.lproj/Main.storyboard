@@ -20,12 +20,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter your phone number" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="5nL-vU-D6R">
-                                <rect key="frame" x="20" y="40" width="560" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" keyboardType="phonePad"/>
+                                <rect key="frame" x="20" y="200" width="560" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="zD8-uv-ls9"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <textInputTraits key="textInputTraits" keyboardType="namePhonePad" returnKeyType="go" enablesReturnKeyAutomatically="YES"/>
+                                <connections>
+                                    <outlet property="delegate" destination="fhm-K0-Ki1" id="dbO-Ho-vTb"/>
+                                </connections>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qaG-gK-pKU">
-                                <rect key="frame" x="285" y="78" width="30" height="30"/>
+                                <rect key="frame" x="282.5" y="258" width="35" height="39"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                 <state key="normal" title="Go!"/>
                                 <connections>
                                     <action selector="goClicked:" destination="fhm-K0-Ki1" eventType="touchUpInside" id="Pk2-Ud-YxC"/>
@@ -36,9 +43,9 @@
                         <constraints>
                             <constraint firstItem="qaG-gK-pKU" firstAttribute="centerX" secondItem="suM-ru-e6I" secondAttribute="centerX" id="RBH-KB-f39"/>
                             <constraint firstItem="qaG-gK-pKU" firstAttribute="top" secondItem="5nL-vU-D6R" secondAttribute="bottom" constant="8" id="Ub8-U4-9k9"/>
+                            <constraint firstItem="5nL-vU-D6R" firstAttribute="centerY" secondItem="suM-ru-e6I" secondAttribute="centerY" multiplier="0.75" id="W9Y-aA-L14"/>
                             <constraint firstAttribute="trailingMargin" secondItem="5nL-vU-D6R" secondAttribute="trailing" id="dXu-BR-df8"/>
                             <constraint firstItem="5nL-vU-D6R" firstAttribute="leading" secondItem="suM-ru-e6I" secondAttribute="leadingMargin" id="e6o-62-dme"/>
-                            <constraint firstItem="5nL-vU-D6R" firstAttribute="top" secondItem="suM-ru-e6I" secondAttribute="topMargin" constant="40" id="gYQ-fD-ufK"/>
                         </constraints>
                     </view>
                     <connections>
@@ -68,20 +75,20 @@
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Identity to Invite" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="22" translatesAutoresizingMaskIntoConstraints="NO" id="5NX-uo-P8t" userLabel="Invitee Text Field">
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Identity to Invite" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="22" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="5NX-uo-P8t" userLabel="Invitee Text Field">
                                 <rect key="frame" x="200" y="50" width="200" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="200" id="9kY-rm-BPe"/>
                                     <constraint firstAttribute="height" constant="45" id="Hkd-mc-gT7"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                <textInputTraits key="textInputTraits" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" keyboardType="namePhonePad" returnKeyType="emergencyCall" enablesReturnKeyAutomatically="YES"/>
                             </textField>
                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="HO5-M4-N94">
                                 <rect key="frame" x="282" y="281" width="37" height="37"/>
                             </activityIndicatorView>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w1h-18-ulX">
-                                <rect key="frame" x="413" y="495" width="134" height="80"/>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w1h-18-ulX">
+                                <rect key="frame" x="445" y="500" width="70" height="70"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="70" id="RLJ-yF-66L"/>
                                     <constraint firstAttribute="height" constant="70" id="Wkl-1M-eGx"/>
@@ -91,13 +98,13 @@
                                     <action selector="muteClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m5x-Ld-t6h"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NRY-Fz-hdE">
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NRY-Fz-hdE">
                                 <rect key="frame" x="85" y="500" width="70" height="70"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="70" id="3Sp-95-9ht"/>
                                     <constraint firstAttribute="height" constant="70" id="OIS-Qr-WFz"/>
                                 </constraints>
-                                <state key="normal" image="cameraFlipIcon"/>
+                                <state key="normal" image="cameraFlipIconAlternative"/>
                                 <connections>
                                     <action selector="turnCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rw7-LX-vbY"/>
                                 </connections>
@@ -114,16 +121,6 @@
                                     <action selector="disconnectButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="riQ-7M-cyG"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ijG-ty-NLv">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ntV-Jn-N49">
-                                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    </view>
-                                </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cA7-Pm-WVb">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <subviews>
@@ -196,7 +193,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dLG-Vd-08z">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="24" translatesAutoresizingMaskIntoConstraints="NO" id="dLG-Vd-08z">
                                         <rect key="frame" x="30" y="30" width="470" height="37.5"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="32"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -327,7 +324,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="cameraFlipIcon" width="80" height="80"/>
+        <image name="cameraFlipIconAlternative" width="80" height="80"/>
         <image name="microphoneIcon" width="80" height="80"/>
         <image name="person" width="626" height="626"/>
         <image name="phoneCancelIcon" width="80" height="80"/>
